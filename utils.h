@@ -1,6 +1,8 @@
 #ifndef _UTILS_H_INCLUDED_
 #define _UTILS_H_INCLUDED_ 1
 
+#include "windows.h"
+
 #define INCHDIV1200_TO_MM(x) \
       ((int)(x*25.4/1200))
 

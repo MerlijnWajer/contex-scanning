@@ -2,6 +2,7 @@
 #define _BMPDATA_H_INCLUDED_ 1
 
 #include <windows.h>
+#include <stdio.h>
 
 class CBmpData 
 {

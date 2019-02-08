@@ -622,7 +622,7 @@ int main(int argc, char* argv[])
    {
       BYTE * pSetWindowBuffer = new BYTE[g_ScanAttr.maxSetWindowLength];
       memset(pSetWindowBuffer,0,g_ScanAttr.maxSetWindowLength);
-      memcpy(pSetWindowBuffer,&swp,min(sizeof(swp),g_ScanAttr.maxSetWindowLength));
+      memcpy(pSetWindowBuffer,&swp,std::min((int)sizeof(swp),g_ScanAttr.maxSetWindowLength));
       rc = scanSetWindow(hs,pSetWindowBuffer,g_ScanAttr.maxSetWindowLength);
       delete[] pSetWindowBuffer;
       if(rc != S_OK)
@@ -692,8 +692,8 @@ int main(int argc, char* argv[])
    if(!pBuffer)
       return CloseAndExit(hs);
 
-   char demofilename[] = "SimpleScan.bmp";
-   CBmpData * pBmpData = new CBmpData(WRITETOFILE? demofilename: "");
+   const char demofilename[] = "SimpleScan.bmp";
+   CBmpData * pBmpData = new CBmpData((char*)(WRITETOFILE? demofilename: ""));
    if (!pBmpData)
       return CloseAndExit(hs);
    if(WRITETOFILE)

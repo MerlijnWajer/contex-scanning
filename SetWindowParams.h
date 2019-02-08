@@ -4,6 +4,7 @@
 #include <windows.h>
 #include "ctx_scan_2000.h" // Include CONTEX SDK header filer
 
+#include "utils.h"
 
 #define WINDOW_DESC_OFFSET 8
 

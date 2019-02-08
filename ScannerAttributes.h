@@ -1,7 +1,9 @@
 #ifndef _SCANNERATTRIBUTES_H_INCLUDED_
 #define _SCANNERATTRIBUTES_H_INCLUDED_ 1
 
+#include <windows.h>
 #include <string>
+
 using namespace std;
 
 struct ScannerAttributes
