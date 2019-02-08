@@ -9,7 +9,7 @@
 *   'G' : Gray tone
 *   'C' : Color
 *
-* Set WRITETOFILE to true or false depending on whether you want file output
+* Set write_to_file to true or false depending on whether you want file output
 *
 * Some scanner attributes are read from the pages inside the scanner.
 *
@@ -55,7 +55,6 @@
 #include <getopt.h>
 
 #define SCANMODE 'C'
-#define WRITETOFILE false
 
 //
 //  Global vars.
@@ -73,6 +72,8 @@ int use_height = 609;
 
 int use_left = 0;
 int use_top = 0;
+
+bool write_to_file = false;
 
 void SetError(HSCANNER hs, int eco)
 {
@@ -451,6 +452,7 @@ void parse_args(int argc, char* argv[]) {
     {
       static struct option long_options[] =
         {
+          {"save",  no_argument, 0, 's'},
           {"dpi",  required_argument, 0, 'd'},
           {"width",    required_argument, 0, 'w'},
           {"height",    required_argument, 0, 'h'},
@@ -461,7 +463,7 @@ void parse_args(int argc, char* argv[]) {
       /* getopt_long stores the option index here. */
       int option_index = 0;
 
-      c = getopt_long (argc, argv, "d:w:h:l:t:",
+      c = getopt_long (argc, argv, "d:w:h:l:t:s",
                        long_options, &option_index);
 
       /* Detect the end of the options. */
@@ -503,6 +505,11 @@ void parse_args(int argc, char* argv[]) {
         case 't':
           printf ("option -t with value `%s'\n", optarg);
 		  use_top = strtol(optarg, endptr, 10);
+          break;
+
+        case 's':
+          printf ("option -s passed\n");
+          write_to_file = true;
           break;
 
 
@@ -687,7 +694,7 @@ int main(int argc, char* argv[])
    }
 
    printf("Mode                   : %c\n", scanMode);
-   printf("File                   : %s\n", WRITETOFILE ? "yes" : "no");
+   printf("File                   : %s\n", write_to_file? "yes" : "no");
    printf("Center load            : %s\n", bCenterLoad ? "yes" : "no");
    printf("Dpi                    : %d (%d-%d)\n", dpi, g_ScanAttr.minDpiX, g_ScanAttr.maxDpiX);
    printf("Width*Height           : %d * %d mm\n", width, height);
@@ -791,10 +798,10 @@ int main(int argc, char* argv[])
       return CloseAndExit(hs);
 
    const char demofilename[] = "SimpleScan.bmp";
-   CBmpData * pBmpData = new CBmpData((char*)(WRITETOFILE? demofilename: ""));
+   CBmpData * pBmpData = new CBmpData((char*)(write_to_file? demofilename: ""));
    if (!pBmpData)
       return CloseAndExit(hs);
-   if(WRITETOFILE)
+   if(write_to_file)
       pBmpData->SetLineInfo((scanMode == 'C') ? 3 : 1 , iPixels);
 
    printf("Actual pixels per line : %d\n", iPixels);
@@ -817,7 +824,7 @@ int main(int argc, char* argv[])
       {
       case SCSI_STATUS_GOOD:
          {
-            if(WRITETOFILE)
+            if(write_to_file)
                pBmpData->AddData(pBuffer,(ULONG)iBytesRead);
             break;
          }
