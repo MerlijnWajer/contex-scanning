@@ -65,6 +65,8 @@ int                  g_errFatal=0;
 ScannerAttributes    g_ScanAttr;
 bool                 g_UnitReserved=false;
 
+long total_scanned_bytes=0;
+
 int use_dpi = 1200;
 int use_width = 487;
 int use_height = 609;
@@ -802,12 +804,15 @@ int main(int argc, char* argv[])
    //
    do
    {
+      printf("Going to read max %u bytes\n", iBytesToRead);
       rc = scanRead( hs,
          pBuffer,
          iBytesToRead,
          SCAN_READSEND_CODE_IMAGE,
          SCAN_READSEND_QUALIFIER_IMAGE,
          &iBytesRead);
+      total_scanned_bytes += iBytesRead;
+      printf("Read %ul bytes\n", iBytesRead);
       switch (rc)
       {
       case SCSI_STATUS_GOOD:
@@ -842,6 +847,8 @@ int main(int argc, char* argv[])
          break;
       }
    } while(rc==S_OK);
+
+   printf("Read %ld bytes.\n", total_scanned_bytes);
 
    //
    // We save the image data in a BMP format
