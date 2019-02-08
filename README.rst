@@ -83,9 +83,14 @@ To scan a gatefold::
 
     wine simplescan.exe -d 100 -h 618 -w 312 -l 175 -t 0
 
+To scan a full bed (-h 900 is too large, but the scanner will just cut it to the
+right value)::
 
-    You might have to set WINEPATH to a location that contains the mingw dlls,
-    or we can just ship them in the dlls/ directory in the future.
+    wine simplescan.exe -d 600 -h 900 -w 487 -l 0 -t 0
+
+
+You might have to set WINEPATH to a location that contains the mingw dlls,
+or we can just ship them in the dlls/ directory in the future.
 
 
 Notes
