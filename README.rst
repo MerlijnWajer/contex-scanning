@@ -6,37 +6,37 @@ The Contex IQ FLEX has only Windows drivers:
 * TWAIN driver
 * Low level driver
 
-The TWAIN driver internally calls a program called `Nextimage.exe`, which is a
+The TWAIN driver internally calls a program called *Nextimage.exe*, which is a
 huge .NET program that doesn't run in WINE or Mono. It has a lot of supporting
 libraries and generally doesn't seem to support headless scanning. It wraps .NET
-functions around `GS.Task.dll`, which is a high level task manager to
-`CtxScan64.dll` and `CtxSws64.dll`, which perform the actual scanning.
+functions around *GS.Task.dll*, which is a high level task manager to
+*CtxScan64.dll* and *CtxSws64.dll*, which perform the actual scanning.
 
-The low level driver is called `ctx_scan_2000.dll` (and `ScanWing.dll`), and is
-shipped with the `WIDEsystem` "driver". The `WIDEsystem` driver also contains a
-GUI to find/add scanners, called `WS.exe` - but this is in no way required to
+The low level driver is called *ctx_scan_2000.dll* (and *ScanWing.dll*), and is
+shipped with the *WIDEsystem* "driver". The *WIDEsystem* driver also contains a
+GUI to find/add scanners, called *WS.exe* - but this is in no way required to
 actually use the drivers. The scanners are stored in
-`C:\ProgramData\Contex\WIDEsystem\Settings.ini` (or, in WINE, in:
-`C:\ProgramData\Settings.ini`) and can be tweaked manually or defined
-programmatically in that file. The `ctx_scan_2000.dll` API will also require
+*C:\ProgramData\Contex\WIDEsystem\Settings.ini* (or, in WINE, in:
+*C:\ProgramData\Settings.ini*) and can be tweaked manually or defined
+programmatically in that file. The *ctx_scan_2000.dll* API will also require
 this file to be present, otherwise it will not initialise. It also requires
-`CtxWia64.dll` to be present in `C:\Windows\System32` but doesn't seem to
+*CtxWia64.dll* to be present in *C:\Windows\System32* but doesn't seem to
 actually use it.
 
 Using the Contex SDK "example scan code", it is possible to perform headless
 scans. Their example builds on Visual Studio 2017 on Windows. I've taken the
-code and made it work with MinGW and a Makefile. Set `WRITEFILE` to true if you
-want it to save the bitmap, but be aware that it's *REALLY SLOW* at writing
+code and made it work with MinGW and a Makefile. Set *WRITEFILE* to true if you
+want it to save the bitmap, but be aware that it's **REALLY SLOW** at writing
 bitmaps, so do not use this for any kind of benchmarking.
 
-Currently, `simplescan.exe` is built by the Makefile, and it supports the
+Currently, *simplescan.exe* is built by the Makefile, and it supports the
 following options/features:
 
-* `-d` set DPI
-* `-w` set width in millimeters
-* `-h` set height in millimeters
-* `-l` set left-offset in millimeters
-* `-t` set top-offset in millimeters
+* *-d* set DPI
+* *-w* set width in millimeters
+* *-h* set height in millimeters
+* *-l* set left-offset in millimeters
+* *-t* set top-offset in millimeters
 
 There's more work to be done, see the `TODO`_ section.
 
@@ -46,14 +46,14 @@ Building
 
 Install toolchain:
 
-* `gcc-mingw-w64`
-* `g++-mingw-w64`
+* *gcc-mingw-w64*
+* *g++-mingw-w64*
 
 Get/Download:
 
-* dlls from `dlls` branch
+* dlls from *dlls* branch
 
-Type `make`
+Type *make*.
 
 
 WINE
