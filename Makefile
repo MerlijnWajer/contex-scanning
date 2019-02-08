@@ -1,6 +1,6 @@
 .PHONY: default clean
 
-CFLAGS+=-std=c++11 -Wall -Wextra
+CFLAGS+=-std=c++11 -Wall -Wextra -O2
 LDFLAGS+=-lctx_scan_2000 -L.
 CC=i686-w64-mingw32-g++
 
