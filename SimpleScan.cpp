@@ -6,14 +6,14 @@
 * find and open a scanner and issuing a simple scan.
 *
 * Set the SCANMODE define below for to select between on of the two scan modes:
-*   'G' : Gray tone 
+*   'G' : Gray tone
 *   'C' : Color
 *
 * Set WRITETOFILE to true or false depending on whether you want file output
 *
 * Some scanner attributes are read from the pages inside the scanner.
 *
-* A 200 mm wide and 200 mm long is scanned i 200 dpi. 
+* A 200 mm wide and 200 mm long is scanned i 200 dpi.
 *
 *
 *  The following routines are demonstrated:
@@ -118,21 +118,21 @@ int ReadAttributes(HSCANNER hs)
    // get name of scanner
    g_ScanAttr.scannerId.assign((const char *)inqPageBuffer+16,16);
 
-   // 
-   // How many (and which) inquiry pages can be retrieved from scanner ? 
-   // 
+   //
+   // How many (and which) inquiry pages can be retrieved from scanner ?
+   //
    scanInquiryPage(hs, inqPagesSupBuffer,sizeof(inqPagesSupBuffer),SCAN_INQUIRY_PAGE_PAGES_SUPPORTED);
    listLength = inqPagesSupBuffer[3];
 
    //
-   // Get and parse all available pages 
+   // Get and parse all available pages
    //
-   for (int listIndex = 1; listIndex < listLength; listIndex++) 
+   for (int listIndex = 1; listIndex < listLength; listIndex++)
    {
-      if (S_OK == (rc = scanInquiryPage(hs,inqPageBuffer,sizeof(inqPageBuffer),inqPagesSupBuffer[4+listIndex]))) 
+      if (S_OK == (rc = scanInquiryPage(hs,inqPageBuffer,sizeof(inqPageBuffer),inqPagesSupBuffer[4+listIndex])))
       {
          /* Switch on page code */
-         switch (inqPageBuffer[1]) 
+         switch (inqPageBuffer[1])
          {
             //
             // TODO: You should parse these pages completely in a real application
@@ -200,8 +200,8 @@ int ReadAttributes(HSCANNER hs)
             printf("Unknown page 0x%02x\n", (int)inqPagesSupBuffer[4+listIndex]);
             break;
          }
-      } 
-      else 
+      }
+      else
       {
          printf("Failed retrieving page 0x%02x\n", (int)inqPagesSupBuffer[4+listIndex]);
          return FALSE;
@@ -215,7 +215,7 @@ int ReadAttributes(HSCANNER hs)
 void MakeGammaTable(BYTE *pTab, int nReqSize, bool bUSeSRGB)
 {
    int i;
-   // Return a linear gamma table 
+   // Return a linear gamma table
    for (i=0; i < nReqSize; i++){
       pTab[i] = 255*i/(nReqSize-1);
       if(bUSeSRGB)
@@ -230,7 +230,7 @@ void MakeGammaTable(BYTE *pTab, int nReqSize, bool bUSeSRGB)
 int CloseAndExit(HSCANNER hs)
 {
    int rc;
-   // 
+   //
    // Release Unit if reserved
    //
    if (g_UnitReserved)
@@ -315,7 +315,7 @@ void SetupGraytoneScan(int width, int length, int dpi, bool bCenterLoad, SETWIND
    swp.m_width                = (long)MM_TO_INCHDIV1200(width);
    swp.m_length               = (long)MM_TO_INCHDIV1200(length);
    if (bCenterLoad)
-      swp.m_upperLeftX = g_ScanAttr.maxScanWidth/2 - swp.m_width/2 ; 
+      swp.m_upperLeftX = g_ScanAttr.maxScanWidth/2 - swp.m_width/2 ;
    swp.m_threshold            = 151; // All above is black if BW mode used
    swp.m_imageComposition     = 2; // Gray tone mode
    swp.m_bitsPerPixel         = 8;
@@ -361,8 +361,8 @@ int SoftHandling(HSCANNER hs, bool bOn)
 }
 
 // The HD Ultra scanner has a normal and a high internal scanner resolution.
-// The scanner application can control which internal scanner resolution is used 
-// when the scanner application scans. 
+// The scanner application can control which internal scanner resolution is used
+// when the scanner application scans.
 // This setting is volatile and is not stored in the scanner (default is normal resolution).
 int SetHighScannerResolution(HSCANNER hs, BYTE ScanMode, BYTE Width)
 {
@@ -403,7 +403,7 @@ int DisplayScannerInfo(HSCANNER hs)
       default: printf("?"); break;
    }
 
-   {  
+   {
       printf("Color bit width support: ");
       int iBits = g_ScanAttr.colorBitWidthSupport;
       int iColorBitWidth[] = { 24, 48 };
@@ -416,7 +416,7 @@ int DisplayScannerInfo(HSCANNER hs)
       printf("\n");
    }
 
-   {  
+   {
       printf("Gray bit width support : ");
       int iBits = g_ScanAttr.graytoneBitWidthSupport;
       int iGrayBitWidth[] = { 8, 16 };
@@ -507,10 +507,10 @@ int main(int argc, char* argv[])
 
    parse_args(argc, argv);
 
-   // 
+   //
    //  We must open the library first
    //
-   if(S_OK != (rc=scanOpenLib()) ) 
+   if(S_OK != (rc=scanOpenLib()) )
    {
       printf("Failed to open scanner library (rc=%d)\n",rc);
       //int ch = _getch();
@@ -518,11 +518,11 @@ int main(int argc, char* argv[])
    }
 
    HSCANNER hs=-1;   // HSCANNER is defined in ctx_scan_2000.h
-   BOOL bIsOpen;     // Dummy var. 
-   // 
+   BOOL bIsOpen;     // Dummy var.
+   //
    //  We locate and use the first available wide format scanner
    //
-   if(S_OK != (rc=scanGetNextScanner(&hs,&bIsOpen,TRUE))) // get first available CONTEX scanner 
+   if(S_OK != (rc=scanGetNextScanner(&hs,&bIsOpen,TRUE))) // get first available CONTEX scanner
       return DisplayErrorAndExit(hs, rc, "Failed to locate scanner");
 
    //
@@ -530,7 +530,7 @@ int main(int argc, char* argv[])
    // and want to use number two in the list for scanning.
    //
    /*
-   if(S_OK != (rc=scanGetNextScanner(&hs,&bIsOpen,FALSE))) // get next available CONTEX scanner 
+   if(S_OK != (rc=scanGetNextScanner(&hs,&bIsOpen,FALSE))) // get next available CONTEX scanner
    return DisplayErrorAndExit(hs,rc, "Failed to locate next scanner");
    */
 
@@ -542,7 +542,7 @@ int main(int argc, char* argv[])
 
    //
    // Read some attributes from the scanner
-   //  
+   //
    if(S_OK!=(rc = ReadAttributes(hs)))
       return DisplayErrorAndExit(hs, rc, "Failed to read scanner attributes");
 
@@ -581,15 +581,15 @@ int main(int argc, char* argv[])
    */
 
    //
-   // Enable code below to control soft paper handling 
+   // Enable code below to control soft paper handling
    //
-   /*  
+   /*
    if (S_OK!=(rc = SoftHandling(hs,true)))
    return DisplayErrorAndExit(hs, rc, "Failed to set soft paper handling");
    */
 
    //
-   // Load paper 
+   // Load paper
    //
    if(S_OK!=(rc = scanObjectPosition(hs,SCAN_OBJ_POS_LOAD, 0)))
       return DisplayErrorAndExit(hs, rc, "Failed to load media");
@@ -661,7 +661,7 @@ int main(int argc, char* argv[])
    default: bCenterLoad = false;
             break;
    }
-        
+
    printf("Mode                   : %c\n", scanMode);
    printf("File                   : %s\n", WRITETOFILE ? "yes" : "no");
    printf("Center load            : %s\n", bCenterLoad ? "yes" : "no");
@@ -670,7 +670,7 @@ int main(int argc, char* argv[])
 
    switch (scanMode)
    {
-   case 'G': // Graytone 
+   case 'G': // Graytone
       SetupGraytoneScan(width, height, dpi, bCenterLoad, swp);
       break;
    case 'C': // 24 bit color
@@ -716,7 +716,7 @@ int main(int argc, char* argv[])
 
    //
    // Set BW point
-   //  
+   //
    BYTE bwPointBuffer[24];
    memset(bwPointBuffer,0,24);
    int wp = (bUseSRGB) ? 275 : 255;
@@ -853,7 +853,7 @@ int main(int argc, char* argv[])
          return DisplayErrorAndExit(hs, rc, "Failed to release scanner");
       g_UnitReserved=false;
       BYTE buf[1];
-      buf[0] = 0;    // power down 
+      buf[0] = 0;    // power down
       if (S_OK!=(rc = scanSend(hs, buf, 1, SCAN_READSEND_CODE_POWER_DOWN, SCAN_READSEND_QUALIFIER_POWERDOWN)))
          return DisplayErrorAndExit(hs, rc, "Failed to get scanner to sleep");
       // Wait for scanner to sleep - max 15 * 100ms
@@ -873,4 +873,3 @@ int main(int argc, char* argv[])
    printf("\nPress any key to continue ...");
    return CloseAndExit(hs);
 }
-
