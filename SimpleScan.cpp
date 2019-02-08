@@ -254,7 +254,7 @@ int CloseAndExit(HSCANNER hs)
    if (S_OK!= (rc=scanCloseLib()))
       printf("Close Library failed with return code %d\n",rc);
 
-   int ch = _getch();
+   //int ch = _getch();
    return 0;
 }
 
@@ -513,7 +513,7 @@ int main(int argc, char* argv[])
    if(S_OK != (rc=scanOpenLib()) ) 
    {
       printf("Failed to open scanner library (rc=%d)\n",rc);
-      int ch = _getch();
+      //int ch = _getch();
       return 1;
    }
 
