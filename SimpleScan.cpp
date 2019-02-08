@@ -48,6 +48,12 @@
 #include "ctx_scan_2000.h"             // Include CONTEX SDK header filer
 #include "SetWindowParams.h"
 
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <getopt.h>
+
 #define SCANMODE 'C'
 #define WRITETOFILE true
 
@@ -58,6 +64,10 @@ int                  g_errCode=S_OK;
 int                  g_errFatal=0;
 ScannerAttributes    g_ScanAttr;
 bool                 g_UnitReserved=false;
+
+int use_dpi = 1200;
+int use_width = 487;
+int use_height = 609;
 
 void SetError(HSCANNER hs, int eco)
 {
@@ -423,6 +433,66 @@ int DisplayScannerInfo(HSCANNER hs)
    return 1;
 }
 
+void parse_args(int argc, char* argv[]) {
+  int c;
+  char **endptr;
+
+  while (1)
+    {
+      static struct option long_options[] =
+        {
+          {"dpi",  required_argument, 0, 'd'},
+          {"width",    required_argument, 0, 'w'},
+          {"height",    required_argument, 0, 'h'},
+          {0, 0, 0, 0}
+        };
+      /* getopt_long stores the option index here. */
+      int option_index = 0;
+
+      c = getopt_long (argc, argv, "d:w:h:",
+                       long_options, &option_index);
+
+      /* Detect the end of the options. */
+      if (c == -1)
+        break;
+
+      switch (c)
+        {
+        case 0:
+          /* If this option set a flag, do nothing else now. */
+          if (long_options[option_index].flag != 0)
+            break;
+          printf ("option %s", long_options[option_index].name);
+          if (optarg)
+            printf (" with arg %s", optarg);
+          printf ("\n");
+          break;
+
+        case 'd':
+          printf ("option -d with value `%s'\n", optarg);
+		  use_dpi = strtol(optarg, endptr, 10);
+          break;
+
+        case 'w':
+          printf ("option -w with value `%s'\n", optarg);
+		  use_width = strtol(optarg, endptr, 10);
+          break;
+
+        case 'h':
+          printf ("option -h with value `%s'\n", optarg);
+		  use_height= strtol(optarg, endptr, 10);
+          break;
+
+        case '?':
+          /* getopt_long already printed an error message. */
+          break;
+
+        default:
+          exit(1);
+        }
+    }
+}
+
 int main(int argc, char* argv[])
 {
    int rc;
@@ -434,6 +504,8 @@ int main(int argc, char* argv[])
 #else
    printf("SimpleScan 32 bit version started\n");
 #endif
+
+   parse_args(argc, argv);
 
    // 
    //  We must open the library first
@@ -554,14 +626,16 @@ int main(int argc, char* argv[])
    //
    //  Set scan window
    //
-   SETWINDOWPARAMS swp; 
+   SETWINDOWPARAMS swp;
    bool bUseSRGB  = true;
-   int  dpi       = 1200;
+   int  dpi       = use_dpi;
    char scanMode  = SCANMODE;
-   int width      = 457;
-   int height     = 609;
+   //int width      = 490;
+   int width      = use_width;
+   //int width      = 482;
+   int height     = use_height;
    bool bCenterLoad = false;
-   
+
    switch (g_ScanAttr.centerLoad)
    {
    case 0:  bCenterLoad = false;  // Original can be placed at the first pixel
