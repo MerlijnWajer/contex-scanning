@@ -37,6 +37,7 @@ following options/features:
 * *-h* set height in millimeters
 * *-l* set left-offset in millimeters
 * *-t* set top-offset in millimeters
+* *-s* save image to SimpleScan.bmp in current directory
 
 There's more work to be done, see the `TODO`_ section.
 
