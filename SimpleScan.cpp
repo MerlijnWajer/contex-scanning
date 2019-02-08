@@ -55,7 +55,7 @@
 #include <getopt.h>
 
 #define SCANMODE 'C'
-#define WRITETOFILE true
+#define WRITETOFILE false
 
 //
 //  Global vars.
