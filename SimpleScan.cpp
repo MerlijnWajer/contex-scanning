@@ -69,6 +69,9 @@ int use_dpi = 1200;
 int use_width = 487;
 int use_height = 609;
 
+int use_left = 0;
+int use_top = 0;
+
 void SetError(HSCANNER hs, int eco)
 {
 
@@ -273,29 +276,32 @@ void SetupColorScan(int width, int length, int dpi, bool bUseSRGB, bool bCenterL
    swp.m_dpiy                 = dpi;
    //swp.m_upperLeftX         = 0; // Assume side-loaded paper!!
    //swp.m_upperLeftY         = 0; // No vertical offset
+   swp.m_upperLeftX         = (long)MM_TO_INCHDIV1200(use_left); // Assume side-loaded paper!!
+   swp.m_upperLeftY         = (long)MM_TO_INCHDIV1200(use_top); // No vertical offset
    swp.m_width                = (long)MM_TO_INCHDIV1200(width);
    swp.m_length               = (long)MM_TO_INCHDIV1200(length);
    if (bCenterLoad)
-      swp.m_upperLeftX = g_ScanAttr.maxScanWidth/2 - swp.m_width/2 ; 
+      swp.m_upperLeftX = g_ScanAttr.maxScanWidth/2 - swp.m_width/2 ;
    swp.m_threshold            = 151; // All above is black if BW mode used
    swp.m_imageComposition     = 5; // RGB mode
-   swp.m_colorComposition     = 4;
+   swp.m_colorComposition     = 4; // 4 = RGB color
    swp.m_bitsPerPixel         = 24;
    //swp.m_rif                = 0; // Not reversing BW data
    swp.m_compressionType      = 0x0; // 0x80; if BW
    //swp.m_dynamicThreshold   = 0;
    //swp.m_lineEnhancement    = 0;
    swp.m_lineLimit            = 1000;
-   //swp.m_scanDirection      = 0; // scan in the forward direction
+   //swp.m_scanDirection        = 0; // scan in the forward direction
    //   swp.m_bufferLimit          = 0x100000;//1MB
    //swp.m_colorComposition   = 0; only used for color image composition
    //swp.m_dspBackgroundLevel = 0;
    //swp.m_dspAdaptiveLevel   = 0;
    //swp.m_dspConstant        = 3;
-   swp.m_scanSpeed            = 100;//50;
+   swp.m_scanSpeed            = 100; // Apparently scan speed in percentage
    //swp.m_useFeatureRam      = 0;
    swp.m_blur                 = 0; // 0 -- 16
    swp.m_sharpening           = 0; // -1 -- 8
+   // sRGB = 1 (but what sRGB exactly???)
    swp.m_ColorSpaceType       = bUseSRGB  ? 1 : 0; // use sRGB color space
    swp.m_ColorSaturationLevel = 100; // only use in color mode
    //
@@ -437,6 +443,8 @@ void parse_args(int argc, char* argv[]) {
   int c;
   char **endptr;
 
+  /* mostly verbatim copy from https://www.gnu.org/software/libc/manual/html_node/Getopt-Long-Option-Example.html#Getopt-Long-Option-Example */
+
   while (1)
     {
       static struct option long_options[] =
@@ -444,12 +452,14 @@ void parse_args(int argc, char* argv[]) {
           {"dpi",  required_argument, 0, 'd'},
           {"width",    required_argument, 0, 'w'},
           {"height",    required_argument, 0, 'h'},
+          {"left",    required_argument, 0, 'l'},
+          {"top",    required_argument, 0, 't'},
           {0, 0, 0, 0}
         };
       /* getopt_long stores the option index here. */
       int option_index = 0;
 
-      c = getopt_long (argc, argv, "d:w:h:",
+      c = getopt_long (argc, argv, "d:w:h:l:t:",
                        long_options, &option_index);
 
       /* Detect the end of the options. */
@@ -482,6 +492,18 @@ void parse_args(int argc, char* argv[]) {
           printf ("option -h with value `%s'\n", optarg);
 		  use_height= strtol(optarg, endptr, 10);
           break;
+
+        case 'l':
+          printf ("option -l with value `%s'\n", optarg);
+		  use_left = strtol(optarg, endptr, 10);
+          break;
+
+        case 't':
+          printf ("option -t with value `%s'\n", optarg);
+		  use_top = strtol(optarg, endptr, 10);
+          break;
+
+
 
         case '?':
           /* getopt_long already printed an error message. */
