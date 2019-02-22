@@ -4,7 +4,7 @@ CFLAGS+=-std=c++11 -Wall -Wextra -O2
 LDFLAGS+=-lctx_scan_2000 -L.
 CC=i686-w64-mingw32-g++
 
-SCAN_OS=BmpData.cpp  SimpleScan.cpp  StdAfx.cpp
+SCAN_OS=BmpData.cpp  simplescan.cpp  StdAfx.cpp
 SCAN_HS=BmpData.h ScannerAttributes.h SetWindowParams.h StdAfx.h utils.h
 
 
