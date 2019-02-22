@@ -12,3 +12,6 @@ default: simplescan.exe
 
 simplescan.exe: $(SCAN_HS) $(SCAN_OS)
 	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
+
+clean:
+	rm -f simplescan.exe
