@@ -5,10 +5,6 @@
 * Minimal demonstration of how to open scanner library,
 * find and open a scanner and issuing a simple scan.
 *
-* Set the SCANMODE define below for to select between on of the two scan modes:
-*   'G' : Gray tone
-*   'C' : Color
-*
 * Set write_to_file to true or false depending on whether you want file output
 *
 * Some scanner attributes are read from the pages inside the scanner.
@@ -59,8 +55,6 @@
 
 #include <fcntl.h>
 #include <io.h>
-
-#define SCANMODE 'C'
 
 //
 //  Global vars.
@@ -224,9 +218,9 @@ int ReadAttributes(HSCANNER hs)
 				//          g_ScanAttr.NoOfCameras = GET_BYTE(inqPageBuffer,14);
 				break;
 			case SCAN_INQUIRY_PAGE_DEVICE_INFORMATION:
-				g_ScanAttr.ProductID.
-				    assign((const char *)inqPageBuffer + 150,
-					   32);
+				g_ScanAttr.
+				    ProductID.assign((const char *)inqPageBuffer
+						     + 150, 32);
 				break;
 			case SCAN_INQUIRY_PAGE_DISPLAY_INFORMATION:
 				break;
@@ -317,19 +311,15 @@ void SetupColorScan(int width, int length, int dpi, bool bUseSRGB,
 	    g_ScanAttr.maxSetWindowLength - WINDOW_DESC_OFFSET;
 	swp.m_dpix = dpi;
 	swp.m_dpiy = dpi;
-	//swp.m_upperLeftX         = 0; // Assume side-loaded paper!!
-	//swp.m_upperLeftY         = 0; // No vertical offset
-	swp.m_upperLeftX = (long)MM_TO_INCHDIV1200(use_left);	// Assume side-loaded paper!!
-	swp.m_upperLeftY = (long)MM_TO_INCHDIV1200(use_top);	// No vertical offset
+	swp.m_upperLeftX = (long)MM_TO_INCHDIV1200(use_left);
+	swp.m_upperLeftY = (long)MM_TO_INCHDIV1200(use_top);
 	swp.m_width = (long)MM_TO_INCHDIV1200(width);
-	fprintf(stderr, "width: %d; mm_to_inchdiv1200 width: %d\n", width,
-		swp.m_width);
 	swp.m_length = (long)MM_TO_INCHDIV1200(length);
-	fprintf(stderr, "length: %d; mm_to_inchdiv1200 length: %d\n", length,
-		swp.m_length);
+
 	if (bCenterLoad)
 		swp.m_upperLeftX =
 		    g_ScanAttr.maxScanWidth / 2 - swp.m_width / 2;
+
 	swp.m_threshold = 151;	// All above is black if BW mode used
 	swp.m_imageComposition = 5;	// RGB mode
 	swp.m_colorComposition = 4;	// 4 = RGB color
@@ -356,88 +346,6 @@ void SetupColorScan(int width, int length, int dpi, bool bUseSRGB,
 	// finally swap words from little endian to big endian before writing to the scanner
 	//
 	swp.Convert();
-}
-
-void SetupGraytoneScan(int width, int length, int dpi, bool bCenterLoad,
-		       SETWINDOWPARAMS & swp)
-{
-	memset(&swp, 0, sizeof(swp));
-	swp.m_ParameterListLength =
-	    g_ScanAttr.maxSetWindowLength - WINDOW_DESC_OFFSET;
-	swp.m_dpix = dpi;
-	swp.m_dpiy = dpi;
-	//swp.m_upperLeftX         = 0; // Assume side-loaded paper!!
-	//swp.m_upperLeftY         = 0; // No vertical offset
-	swp.m_width = (long)MM_TO_INCHDIV1200(width);
-	swp.m_length = (long)MM_TO_INCHDIV1200(length);
-	if (bCenterLoad)
-		swp.m_upperLeftX =
-		    g_ScanAttr.maxScanWidth / 2 - swp.m_width / 2;
-	swp.m_threshold = 151;	// All above is black if BW mode used
-	swp.m_imageComposition = 2;	// Gray tone mode
-	swp.m_bitsPerPixel = 8;
-	//swp.m_rif                = 0; // Not reversing BW data
-	swp.m_compressionType = 0x0;	// 0x80; if BW
-	//swp.m_dynamicThreshold   = 0;
-	//swp.m_lineEnhancement    = 0;
-	swp.m_lineLimit = 1000;
-	//swp.m_scanDirection      = 0; // scan in the forward direction
-	//swp.m_bufferLimit          = 0x100000;//1MB
-	//swp.m_colorComposition   = 0; only used for color image composition
-	//swp.m_dspBackgroundLevel = 0;
-	//swp.m_dspAdaptiveLevel   = 0;
-	//swp.m_dspConstant        = 3;
-	swp.m_scanSpeed = 0;	//50;
-	//swp.m_useFeatureRam      = 0;
-	swp.m_blur = 0;		// 0 -- 16
-	swp.m_sharpening = 0;	// -1 -- 8
-	swp.m_ColorSpaceType = 0;	// use sRGB color space
-	swp.m_ColorSaturationLevel = 100;	// only use in color mode
-	//
-	// finally swap words from little endian to big endian before writing to the scanner
-	//
-	swp.Convert();
-
-}
-
-// The Soft paper handling settings is stored in the scanner
-// i.e. it stays in effect until being reset.
-int SoftHandling(HSCANNER hs, bool bOn)
-{
-	BYTE buffer[1];
-	buffer[0] = (bOn ? 0x10 : 0x00);
-	int rc =
-	    scanWriteBuffer(hs, buffer, 0x01, SCAN_BUFFER_ID_PAPER_HANDLING, 0,
-			    1);
-	if (rc == S_OK) {
-		DWORD dwSpeed = (bOn ? 0x05 : 0xFFFF);
-		dwSpeed *= 1200;	// Unit is: inch/1200/sec
-		dwSpeed = MySwap(dwSpeed);
-		rc = scanWriteBuffer(hs, (BYTE *) & dwSpeed, 0x01,
-				     SCAN_BUFFER_ID_MAX_MOVE_SPEED, 0,
-				     sizeof(dwSpeed));
-	}
-	return rc;
-}
-
-// The HD Ultra scanner has a normal and a high internal scanner resolution.
-// The scanner application can control which internal scanner resolution is used
-// when the scanner application scans.
-// This setting is volatile and is not stored in the scanner (default is normal resolution).
-int SetHighScannerResolution(HSCANNER hs, BYTE ScanMode, BYTE Width)
-{
-	BYTE buf[3];
-
-	switch (ScanMode) {
-	case 'G':
-		PUT_WORD(buf, 0, 1);
-		break;
-	case 'C':
-		PUT_WORD(buf, 0, 0);
-		break;
-	}
-	buf[2] = Width;
-	return scanWriteBuffer(hs, buf, 0x01, 0xEA, 0, sizeof(buf));
 }
 
 int DisplayScannerInfo(HSCANNER hs)
@@ -698,7 +606,6 @@ int main(int argc, char *argv[])
 	SETWINDOWPARAMS swp;
 	bool bUseSRGB = true;
 	int dpi = use_dpi;
-	char scanMode = SCANMODE;
 	//int width      = 490;
 	int width = use_width;
 	//int width      = 482;
@@ -732,7 +639,6 @@ int main(int argc, char *argv[])
 		break;
 	}
 
-	fprintf(stderr, "Mode                   : %c\n", scanMode);
 	fprintf(stderr, "File                   : %s\n",
 		write_to_file ? "yes" : "no");
 	fprintf(stderr, "Center load            : %s\n",
@@ -741,16 +647,7 @@ int main(int argc, char *argv[])
 		g_ScanAttr.minDpiX, g_ScanAttr.maxDpiX);
 	fprintf(stderr, "Width*Height           : %d * %d mm\n", width, height);
 
-	switch (scanMode) {
-	case 'G':		// Graytone
-		SetupGraytoneScan(width, height, dpi, bCenterLoad, swp);
-		break;
-	case 'C':		// 24 bit color
-		SetupColorScan(width, height, dpi, bUseSRGB, bCenterLoad, swp);
-		break;
-	default:
-		DisplayErrorAndExit(hs, 0, "Invalid scan mode");
-	}
+	SetupColorScan(width, height, dpi, bUseSRGB, bCenterLoad, swp);
 
 	//
 	// Is Post Scan Original Handling supported?
@@ -912,12 +809,6 @@ int main(int argc, char *argv[])
 	}
 	//  Enter loop to read data
 	//
-    fprintf(stderr, "Sleeping\n");
-    sleep(2);
-    fprintf(stderr, "Sleeping\n");
-    sleep(2);
-    fprintf(stderr, "Sleeping\n");
-    sleep(2);
 	do {
 		//fprintf(stderr, "Going to read max %u bytes\n", iBytesToRead);
 		rc = scanRead(hs,
