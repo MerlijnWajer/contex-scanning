@@ -54,6 +54,12 @@
 #include <unistd.h>
 #include <getopt.h>
 
+#include <png.h>
+#include <math.h>
+
+#include <fcntl.h>
+#include <io.h>
+
 #define SCANMODE 'C'
 
 //
@@ -73,6 +79,7 @@ int use_height = 609;
 int use_left = 0;
 int use_top = 0;
 
+char *file_to_save_to = NULL;
 bool write_to_file = false;
 
 void SetError(HSCANNER hs, int eco)
@@ -85,21 +92,23 @@ void SetError(HSCANNER hs, int eco)
 		g_errFatal = (e != 3);
 		char msg[256];
 		scanGetErrorMessage(g_errCode, msg, sizeof(msg));
-		printf("Diagnostic message: %s\n", msg);
+		fprintf(stderr, "Diagnostic message: %s\n", msg);
 	} else {
 		g_errCode = eco;
 		g_errFatal = 1;
 	}
 	if (g_errFatal) {
-		printf("Fatal error encountered.\n\t Error code : 0x%X\n",
-		       g_errCode);
-		printf
-		    ("Check REQUEST SENSE in SCSI documentation for error.\n");
+		fprintf(stderr,
+			"Fatal error encountered.\n\t Error code : 0x%X\n",
+			g_errCode);
+		fprintf(stderr,
+			"Check REQUEST SENSE in SCSI documentation for error.\n");
 	} else if (g_errCode) {
-		printf("Non-fatal error encountered.\n\t Error code : 0x%X\n",
-		       g_errCode);
-		printf
-		    ("Check REQUEST SENSE in SCSI documentation for error.\n");
+		fprintf(stderr,
+			"Non-fatal error encountered.\n\t Error code : 0x%X\n",
+			g_errCode);
+		fprintf(stderr,
+			"Check REQUEST SENSE in SCSI documentation for error.\n");
 	}
 }
 
@@ -222,13 +231,13 @@ int ReadAttributes(HSCANNER hs)
 			case SCAN_INQUIRY_PAGE_DISPLAY_INFORMATION:
 				break;
 			default:
-				printf("Unknown page 0x%02x\n",
-				       (int)inqPagesSupBuffer[4 + listIndex]);
+				fprintf(stderr, "Unknown page 0x%02x\n",
+					(int)inqPagesSupBuffer[4 + listIndex]);
 				break;
 			}
 		} else {
-			printf("Failed retrieving page 0x%02x\n",
-			       (int)inqPagesSupBuffer[4 + listIndex]);
+			fprintf(stderr, "Failed retrieving page 0x%02x\n",
+				(int)inqPagesSupBuffer[4 + listIndex]);
 			return FALSE;
 		}
 	}
@@ -268,7 +277,9 @@ int CloseAndExit(HSCANNER hs)
 	//
 	if (g_UnitReserved) {
 		if (S_OK != (rc = scanReleaseUnit(hs)))
-			printf("Release Unit failed with return code %d\n", rc);
+			fprintf(stderr,
+				"Release Unit failed with return code %d\n",
+				rc);
 		g_UnitReserved = false;
 	}
 	//
@@ -276,14 +287,16 @@ int CloseAndExit(HSCANNER hs)
 	//
 	if (hs > 0) {
 		if (S_OK != (rc = scanCloseScanner(hs)))
-			printf("Close Scanner failed with return code %d\n",
-			       rc);
+			fprintf(stderr,
+				"Close Scanner failed with return code %d\n",
+				rc);
 	}
 	//
 	// Close the library
 	//
 	if (S_OK != (rc = scanCloseLib()))
-		printf("Close Library failed with return code %d\n", rc);
+		fprintf(stderr, "Close Library failed with return code %d\n",
+			rc);
 
 	//int ch = _getch();
 	return 0;
@@ -291,7 +304,7 @@ int CloseAndExit(HSCANNER hs)
 
 int DisplayErrorAndExit(HSCANNER hs, int rc, char *Message)
 {
-	printf("%s\n\n", Message);
+	fprintf(stderr, "%s\n\n", Message);
 	SetError(hs, rc);
 	return CloseAndExit(hs);
 }
@@ -309,7 +322,11 @@ void SetupColorScan(int width, int length, int dpi, bool bUseSRGB,
 	swp.m_upperLeftX = (long)MM_TO_INCHDIV1200(use_left);	// Assume side-loaded paper!!
 	swp.m_upperLeftY = (long)MM_TO_INCHDIV1200(use_top);	// No vertical offset
 	swp.m_width = (long)MM_TO_INCHDIV1200(width);
+	fprintf(stderr, "width: %d; mm_to_inchdiv1200 width: %d\n", width,
+		swp.m_width);
 	swp.m_length = (long)MM_TO_INCHDIV1200(length);
+	fprintf(stderr, "length: %d; mm_to_inchdiv1200 length: %d\n", length,
+		swp.m_length);
 	if (bCenterLoad)
 		swp.m_upperLeftX =
 		    g_ScanAttr.maxScanWidth / 2 - swp.m_width / 2;
@@ -425,72 +442,74 @@ int SetHighScannerResolution(HSCANNER hs, BYTE ScanMode, BYTE Width)
 
 int DisplayScannerInfo(HSCANNER hs)
 {
-	printf("The Scanner is a model : %.20s\n",
-	       (const char *)g_ScanAttr.scannerId.c_str());
-	printf("Produced by            : %.20s\n",
-	       (const char *)g_ScanAttr.vendorId.c_str());
+	fprintf(stderr, "The Scanner is a model : %.20s\n",
+		(const char *)g_ScanAttr.scannerId.c_str());
+	fprintf(stderr, "Produced by            : %.20s\n",
+		(const char *)g_ScanAttr.vendorId.c_str());
 
 	BYTE ScannerName[64];
 	if (S_OK ==
 	    scanGetScannerNameToDisplay(hs, ScannerName, sizeof(ScannerName)))
-		printf("Scanner name           : %.64s\n", ScannerName);
+		fprintf(stderr, "Scanner name           : %.64s\n",
+			ScannerName);
 	else
-		printf("Scanner name           : %.64s\n",
-		       g_ScanAttr.ProductID.c_str());
+		fprintf(stderr, "Scanner name           : %.64s\n",
+			g_ScanAttr.ProductID.c_str());
 
-	printf("No of Cameras          : %2d\n", g_ScanAttr.NoOfCameras);
+	fprintf(stderr, "No of Cameras          : %2d\n",
+		g_ScanAttr.NoOfCameras);
 
-	printf("Scanner supports       : ");
+	fprintf(stderr, "Scanner supports       : ");
 	switch (g_ScanAttr.colorSupport) {
 	case 0:
-		printf("gray only\n");
+		fprintf(stderr, "gray only\n");
 		break;
 	case 1:
-		printf("color and gray\n");
+		fprintf(stderr, "color and gray\n");
 		break;
 	case 2:
-		printf("color only\n");
+		fprintf(stderr, "color only\n");
 		break;
 	default:
-		printf("?");
+		fprintf(stderr, "?");
 		break;
 	}
 
 	{
-		printf("Color bit width support: ");
+		fprintf(stderr, "Color bit width support: ");
 		int iBits = g_ScanAttr.colorBitWidthSupport;
 		int iColorBitWidth[] = { 24, 48 };
 		for (int idx = 0; idx < (sizeof(iColorBitWidth) / sizeof(int));
 		     idx++) {
 			if (iBits && 0x01)
-				printf("%2d  ", iColorBitWidth[idx]);
+				fprintf(stderr, "%2d  ", iColorBitWidth[idx]);
 			iBits >>= 1;
 		}
-		printf("\n");
+		fprintf(stderr, "\n");
 	}
 
 	{
-		printf("Gray bit width support : ");
+		fprintf(stderr, "Gray bit width support : ");
 		int iBits = g_ScanAttr.graytoneBitWidthSupport;
 		int iGrayBitWidth[] = { 8, 16 };
 		for (int idx = 0; idx < (sizeof(iGrayBitWidth) / sizeof(int));
 		     idx++) {
 			if (iBits && 0x01)
-				printf("%2d  ", iGrayBitWidth[idx]);
+				fprintf(stderr, "%2d  ", iGrayBitWidth[idx]);
 			iBits >>= 1;
 		}
-		printf("\n");
+		fprintf(stderr, "\n");
 	}
 
-	printf("Max scan width         : %2d\"\n\n",
-	       g_ScanAttr.maxScanWidth / 1200);
+	fprintf(stderr, "Max scan width         : %2d\"\n\n",
+		g_ScanAttr.maxScanWidth / 1200);
 	return 1;
 }
 
 void parse_args(int argc, char *argv[])
 {
 	int c;
-	char **endptr;
+	char **endptr = NULL;
 
 	/* mostly verbatim copy from https://www.gnu.org/software/libc/manual/html_node/Getopt-Long-Option-Example.html#Getopt-Long-Option-Example */
 
@@ -502,12 +521,13 @@ void parse_args(int argc, char *argv[])
 			{"height", required_argument, 0, 'h'},
 			{"left", required_argument, 0, 'l'},
 			{"top", required_argument, 0, 't'},
+			{"file", required_argument, 0, 'f'},
 			{0, 0, 0, 0}
 		};
 		/* getopt_long stores the option index here. */
 		int option_index = 0;
 
-		c = getopt_long(argc, argv, "d:w:h:l:t:s",
+		c = getopt_long(argc, argv, "d:w:h:l:t:f:s",
 				long_options, &option_index);
 
 		/* Detect the end of the options. */
@@ -519,40 +539,46 @@ void parse_args(int argc, char *argv[])
 			/* If this option set a flag, do nothing else now. */
 			if (long_options[option_index].flag != 0)
 				break;
-			printf("option %s", long_options[option_index].name);
+			fprintf(stderr, "option %s",
+				long_options[option_index].name);
 			if (optarg)
-				printf(" with arg %s", optarg);
-			printf("\n");
+				fprintf(stderr, " with arg %s", optarg);
+			fprintf(stderr, "\n");
 			break;
 
 		case 'd':
-			printf("option -d with value `%s'\n", optarg);
+			fprintf(stderr, "option -d with value `%s'\n", optarg);
 			use_dpi = strtol(optarg, endptr, 10);
 			break;
 
 		case 'w':
-			printf("option -w with value `%s'\n", optarg);
+			fprintf(stderr, "option -w with value `%s'\n", optarg);
 			use_width = strtol(optarg, endptr, 10);
 			break;
 
 		case 'h':
-			printf("option -h with value `%s'\n", optarg);
+			fprintf(stderr, "option -h with value `%s'\n", optarg);
 			use_height = strtol(optarg, endptr, 10);
 			break;
 
 		case 'l':
-			printf("option -l with value `%s'\n", optarg);
+			fprintf(stderr, "option -l with value `%s'\n", optarg);
 			use_left = strtol(optarg, endptr, 10);
 			break;
 
 		case 't':
-			printf("option -t with value `%s'\n", optarg);
+			fprintf(stderr, "option -t with value `%s'\n", optarg);
 			use_top = strtol(optarg, endptr, 10);
 			break;
 
 		case 's':
-			printf("option -s passed\n");
+			fprintf(stderr, "option -s passed\n");
 			write_to_file = true;
+			break;
+
+		case 'f':
+			fprintf(stderr, "option -f with value `%s'\n", optarg);
+			file_to_save_to = strdup(optarg);
 			break;
 
 		case '?':
@@ -572,9 +598,9 @@ int main(int argc, char *argv[])
 	// 32 or 64 bit ?
 	//
 #ifdef _WIN64
-	printf("SimpleScan 64 bit version started\n");
+	fprintf(stderr, "SimpleScan 64 bit version started\n");
 #else
-	printf("SimpleScan 32 bit version started\n");
+	fprintf(stderr, "SimpleScan 32 bit version started\n");
 #endif
 
 	parse_args(argc, argv);
@@ -583,7 +609,7 @@ int main(int argc, char *argv[])
 	//  We must open the library first
 	//
 	if (S_OK != (rc = scanOpenLib())) {
-		printf("Failed to open scanner library (rc=%d)\n", rc);
+		fprintf(stderr, "Failed to open scanner library (rc=%d)\n", rc);
 		//int ch = _getch();
 		return 1;
 	}
@@ -635,33 +661,6 @@ int main(int argc, char *argv[])
 	g_UnitReserved = true;
 
 	//
-	// Enable the code below if high scanner resolution is required
-	//
-	/*
-	   switch (SCANMODE)
-	   {
-	   case 'C' :
-	   if(S_OK!=(rc = SetHighScannerResolution(hs, SCANMODE,48)))
-	   return DisplayErrorAndExit(hs, rc, "Failed to set high color scanner resolution");
-	   break;
-	   case 'G' :
-	   if(S_OK!=(rc = SetHighScannerResolution(hs, SCANMODE,16)))
-	   return DisplayErrorAndExit(hs, rc, "Failed to set high color scanner resolution");
-	   break;
-	   default:
-	   break;
-	   }
-	 */
-
-	//
-	// Enable code below to control soft paper handling
-	//
-	/*
-	   if (S_OK!=(rc = SoftHandling(hs,true)))
-	   return DisplayErrorAndExit(hs, rc, "Failed to set soft paper handling");
-	 */
-
-	//
 	// Load paper
 	//
 	if (S_OK != (rc = scanObjectPosition(hs, SCAN_OBJ_POS_LOAD, 0)))
@@ -685,7 +684,7 @@ int main(int argc, char *argv[])
 				bIsLoading = false;
 			else {
 				bIsLoading = true;
-				printf("Loading media...\n");
+				fprintf(stderr, "Loading media...\n");
 				Sleep(200);
 			}
 		} else
@@ -733,12 +732,14 @@ int main(int argc, char *argv[])
 		break;
 	}
 
-	printf("Mode                   : %c\n", scanMode);
-	printf("File                   : %s\n", write_to_file ? "yes" : "no");
-	printf("Center load            : %s\n", bCenterLoad ? "yes" : "no");
-	printf("Dpi                    : %d (%d-%d)\n", dpi, g_ScanAttr.minDpiX,
-	       g_ScanAttr.maxDpiX);
-	printf("Width*Height           : %d * %d mm\n", width, height);
+	fprintf(stderr, "Mode                   : %c\n", scanMode);
+	fprintf(stderr, "File                   : %s\n",
+		write_to_file ? "yes" : "no");
+	fprintf(stderr, "Center load            : %s\n",
+		bCenterLoad ? "yes" : "no");
+	fprintf(stderr, "Dpi                    : %d (%d-%d)\n", dpi,
+		g_ScanAttr.minDpiX, g_ScanAttr.maxDpiX);
+	fprintf(stderr, "Width*Height           : %d * %d mm\n", width, height);
 
 	switch (scanMode) {
 	case 'G':		// Graytone
@@ -845,41 +846,100 @@ int main(int argc, char *argv[])
 	}
 	delete[]pbCameraBuf;
 
+	/* TODO MW: If we're lazy, we can set this buffer size to some multiple of
+	 * our rows */
 	// Use max buffer size specified by the scanner to get highest performance
-	int iBytesToRead = g_ScanAttr.bufferSize;
+	int iBytesToRead = iPixels * 3 * 10;
+	//int iBytesToRead = g_ScanAttr.bufferSize;
 	int iBytesRead;
 	BYTE *pBuffer = new BYTE[iBytesToRead];
 	if (!pBuffer)
 		return CloseAndExit(hs);
+	fprintf(stderr, "Actual pixels per line : %d\n", iPixels);
 
-	const char demofilename[] = "SimpleScan.bmp";
-	CBmpData *pBmpData =
-	    new CBmpData((char *)(write_to_file ? demofilename : ""));
-	if (!pBmpData)
-		return CloseAndExit(hs);
-	if (write_to_file)
-		pBmpData->SetLineInfo((scanMode == 'C') ? 3 : 1, iPixels);
+	png_structp png_ptr = NULL;
+	png_infop info_ptr = NULL;
+	//png_bytep row = NULL;
 
-	printf("Actual pixels per line : %d\n", iPixels);
+	png_ptr =
+	    png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+	if (!png_ptr) {
+		fprintf(stderr, "Cannot create png struct\n");
+		return 1;
+	}
 
-	//
+	info_ptr = png_create_info_struct(png_ptr);
+	if (!info_ptr) {
+		fprintf(stderr, "Cannot create info ptr\n");
+		return 1;
+	}
+
+	if (setjmp(png_jmpbuf(png_ptr))) {
+		fprintf(stderr, "Cannot create png\n");
+		return 1;
+	}
+
+	FILE *tempfile;
+
+	if (write_to_file) {
+		if (file_to_save_to != NULL) {
+			tempfile = fopen((const char *)file_to_save_to, "wb");
+			if (!tempfile) {
+				fprintf(stderr, "Cannot open %s\n",
+					file_to_save_to);
+				return 1;
+			}
+			png_init_io(png_ptr, tempfile);
+		} else {
+			int res = _setmode(fileno(stdout), _O_BINARY);
+			fprintf(stderr, "Changing mode: %d\n", res);
+			png_init_io(png_ptr, stdout);
+		}
+
+		// Disable compression
+		png_set_compression_level(png_ptr, 0);
+
+		int width_px = int (ceil((width / 25.4) * dpi));
+		int height_px = int (ceil((height / 25.4) * dpi));
+		fprintf(stderr, "width_px: %d; height_px: %d\n", width_px,
+			height_px);
+		png_set_IHDR(png_ptr, info_ptr, width_px, height_px, 8,
+			     PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
+			     PNG_COMPRESSION_TYPE_DEFAULT,
+			     PNG_FILTER_TYPE_BASE);
+
+		png_write_info(png_ptr, info_ptr);
+	}
 	//  Enter loop to read data
 	//
+    fprintf(stderr, "Sleeping\n");
+    sleep(2);
+    fprintf(stderr, "Sleeping\n");
+    sleep(2);
+    fprintf(stderr, "Sleeping\n");
+    sleep(2);
 	do {
-		printf("Going to read max %u bytes\n", iBytesToRead);
+		//fprintf(stderr, "Going to read max %u bytes\n", iBytesToRead);
 		rc = scanRead(hs,
 			      pBuffer,
 			      iBytesToRead,
 			      SCAN_READSEND_CODE_IMAGE,
 			      SCAN_READSEND_QUALIFIER_IMAGE, &iBytesRead);
 		total_scanned_bytes += iBytesRead;
-		printf("Read %ul bytes\n", iBytesRead);
+		//fprintf(stderr, "Read %u bytes\n", iBytesRead);
 		switch (rc) {
 		case SCSI_STATUS_GOOD:
 			{
-				if (write_to_file)
-					pBmpData->AddData(pBuffer,
-							  (ULONG) iBytesRead);
+				if (write_to_file) {
+					for (int i = 0;
+					     i < (iBytesRead / (iPixels * 3));
+					     i++) {
+						png_write_row(png_ptr,
+							      pBuffer +
+							      (iPixels * 3 *
+							       i));
+					}
+				}
 				break;
 			}
 		case SCSI_STATUS_CHECK_CONDITION:
@@ -912,18 +972,25 @@ int main(int argc, char *argv[])
 		}
 	} while (rc == S_OK);
 
-	printf("Read %ld bytes.\n", total_scanned_bytes);
+	fprintf(stderr, "Read %ld bytes.\n", total_scanned_bytes);
 
-	//
-	// We save the image data in a BMP format
-	//
+	if (write_to_file) {
+		png_write_end(png_ptr, NULL);
 
-	printf("Number of scan lines   : %d\n",
-	       pBmpData->GetNumberOfScanLines());
+		if (file_to_save_to != NULL) {
+			fflush(tempfile);
+			fclose(tempfile);
+		} else {
+			fflush(stdout);
+		}
 
-	delete pBmpData;	// Close the file now
-	pBmpData = NULL;
+		png_free_data(png_ptr, info_ptr, PNG_FREE_ALL, -1);
+		png_destroy_write_struct(&png_ptr, (png_infopp) NULL);
+	}
+
 	delete[]pBuffer;
+
+	free(file_to_save_to);
 
 	//
 	// Eject paper to back rollers
@@ -934,38 +1001,5 @@ int main(int argc, char *argv[])
 			return DisplayErrorAndExit(hs, rc,
 						   "Failed to load media");
 
-	struct stat stFileInfo;
-	if (stat(demofilename, &stFileInfo) == 0)
-		printf("Scanned image filename : %s \n", demofilename);
-	else
-		printf("Scanned failed - no output file\n");
-
-	//
-	// Enable code below to get a HD Ultra X scanner into sleep mode
-	//
-/*   if (scanGetHardwareType(hs) == CTX_CONNECTION_USBCY) // Use only with an USB cable
-   {
-      if (S_OK!= (rc=scanReleaseUnit(hs)))
-         return DisplayErrorAndExit(hs, rc, "Failed to release scanner");
-      g_UnitReserved=false;
-      BYTE buf[1];
-      buf[0] = 0;    // power down
-      if (S_OK!=(rc = scanSend(hs, buf, 1, SCAN_READSEND_CODE_POWER_DOWN, SCAN_READSEND_QUALIFIER_POWERDOWN)))
-         return DisplayErrorAndExit(hs, rc, "Failed to get scanner to sleep");
-      // Wait for scanner to sleep - max 15 * 100ms
-      for (int i = 0; i < 15; i++)
-      {
-         int nBytesReceived=0;
-         rc = scanRead(hs, buf, 1,
-            SCAN_READSEND_CODE_SCANNER_STATUS,
-            SCAN_READSEND_QUALIFIER_SCANNER_STATUS,
-            &nBytesReceived);
-         if (buf[0] == 10)          // Sleeping
-            break;
-         Sleep(100);
-      }
-   } */
-
-	printf("\nPress any key to continue ...");
 	return CloseAndExit(hs);
 }

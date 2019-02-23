@@ -1,7 +1,8 @@
 .PHONY: default clean
 
 CFLAGS+=-std=c++11 -Wall -Wextra -O2
-LDFLAGS+=-lctx_scan_2000 -L.
+LDFLAGS+=-lctx_scan_2000 -lpng14 -L. -Ibins/windows_32/include/libpng14 -Ibins/windows_32/include -Lbins/windows_32/lib
+#CC=x86_64-w64-mingw32-g++
 CC=i686-w64-mingw32-g++
 
 SCAN_OS=BmpData.cpp  simplescan.cpp  StdAfx.cpp

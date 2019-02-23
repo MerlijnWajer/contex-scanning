@@ -37,7 +37,8 @@ following options/features:
 * *-h* set height in millimeters
 * *-l* set left-offset in millimeters
 * *-t* set top-offset in millimeters
-* *-s* save image to SimpleScan.bmp in current directory
+* *-s* save image (boolean, will print to default stdout)
+* *-f* save image to file instead of stdout
 
 There's more work to be done, see the `TODO`_ section.
 
@@ -87,18 +88,15 @@ To scan a gatefold::
 To scan a full bed (-h 900 is too large, but the scanner will just cut it to the
 right value)::
 
-    wine simplescan.exe -d 600 -h 900 -w 487 -l 0 -t 0
+    wine simplescan.exe -d 600 -h 620 -w 487 -l 0 -t 0
 
 
 You might have to set WINEPATH to a location that contains the mingw dlls,
 or we can just ship them in the dlls/ directory in the future.
 
-
-Notes
-=====
-
-The Contex BmpData implementation is **REALLY POOR** and will cause scans to
-take almost twice as long (45s without saving, 80s with saving to bmp).
+You will also need zlib and libpng; for example from here:
+http://win-builds.org/1.5.0/packages/windows_32/ (use windows_64 if you need 64
+bit builds)
 
 
 Documentation
@@ -131,5 +129,6 @@ Example::
 TODO
 ====
 
-* Write to TIFF or PNG
 * Load/package their sRGB ICC and add it
+* 'No image data!' is sometimes written by ctx_scan_2000.dll (esp. with 1200
+  DPI) and then we lack some image data. Need to debug what happens there.
