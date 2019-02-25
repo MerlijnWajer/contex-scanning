@@ -74,7 +74,11 @@ int use_left = 0;
 int use_top = 0;
 
 char *file_to_save_to = NULL;
+char *icc_profile = NULL;
+char *icc_profile_name = NULL;
 bool write_to_file = false;
+
+int exit_code = 0;
 
 void SetError(HSCANNER hs, int eco)
 {
@@ -435,7 +439,7 @@ void parse_args(int argc, char *argv[])
 		/* getopt_long stores the option index here. */
 		int option_index = 0;
 
-		c = getopt_long(argc, argv, "d:w:h:l:t:f:s",
+		c = getopt_long(argc, argv, "d:w:h:l:t:f:i:n:s",
 				long_options, &option_index);
 
 		/* Detect the end of the options. */
@@ -456,27 +460,27 @@ void parse_args(int argc, char *argv[])
 
 		case 'd':
 			fprintf(stderr, "option -d with value `%s'\n", optarg);
-			use_dpi = strtol(optarg, endptr, 10);
+			use_dpi = (int)strtol(optarg, endptr, 10);
 			break;
 
 		case 'w':
 			fprintf(stderr, "option -w with value `%s'\n", optarg);
-			use_width = strtol(optarg, endptr, 10);
+			use_width = (int)strtol(optarg, endptr, 10);
 			break;
 
 		case 'h':
 			fprintf(stderr, "option -h with value `%s'\n", optarg);
-			use_height = strtol(optarg, endptr, 10);
+			use_height = (int)strtol(optarg, endptr, 10);
 			break;
 
 		case 'l':
 			fprintf(stderr, "option -l with value `%s'\n", optarg);
-			use_left = strtol(optarg, endptr, 10);
+			use_left = (int)strtol(optarg, endptr, 10);
 			break;
 
 		case 't':
 			fprintf(stderr, "option -t with value `%s'\n", optarg);
-			use_top = strtol(optarg, endptr, 10);
+			use_top = (int)strtol(optarg, endptr, 10);
 			break;
 
 		case 's':
@@ -487,6 +491,16 @@ void parse_args(int argc, char *argv[])
 		case 'f':
 			fprintf(stderr, "option -f with value `%s'\n", optarg);
 			file_to_save_to = strdup(optarg);
+			break;
+
+		case 'i':
+			fprintf(stderr, "option -i with value `%s'\n", optarg);
+			icc_profile = strdup(optarg);
+			break;
+
+		case 'n':
+			fprintf(stderr, "option -n with value `%s'\n", optarg);
+			icc_profile_name = strdup(optarg);
 			break;
 
 		case '?':
@@ -528,6 +542,7 @@ int main(int argc, char *argv[])
 	//  We locate and use the first available wide format scanner
 	//
 	if (S_OK != (rc = scanGetNextScanner(&hs, &bIsOpen, TRUE)))	// get first available CONTEX scanner
+		// XXX this will return 0 !!!
 		return DisplayErrorAndExit(hs, rc, "Failed to locate scanner");
 
 	//
@@ -543,12 +558,14 @@ int main(int argc, char *argv[])
 	// Open the scanner
 	//
 	if (S_OK != (rc = scanOpenScanner(hs)))
+		// XXX this will return 0 !!!
 		return DisplayErrorAndExit(hs, rc, "Failed to open scanner");
 
 	//
 	// Read some attributes from the scanner
 	//
 	if (S_OK != (rc = ReadAttributes(hs)))
+		// XXX this will return 0 !!!
 		return DisplayErrorAndExit(hs, rc,
 					   "Failed to read scanner attributes");
 
@@ -560,9 +577,11 @@ int main(int argc, char *argv[])
 	//
 	if (S_OK != (rc = scanReserveUnit(hs))) {
 		if (rc == SCSI_STATUS_RESERVATION_CONFLICT)
+			// XXX this will return 0 !!!
 			return DisplayErrorAndExit(hs, rc,
 						   "Scanner already reserved");
 		else
+			// XXX this will return 0 !!!
 			return DisplayErrorAndExit(hs, rc,
 						   "Failed to reserve scanner");
 	}
@@ -572,6 +591,7 @@ int main(int argc, char *argv[])
 	// Load paper
 	//
 	if (S_OK != (rc = scanObjectPosition(hs, SCAN_OBJ_POS_LOAD, 0)))
+		// XXX this will return 0 !!!
 		return DisplayErrorAndExit(hs, rc, "Failed to load media");
 
 	//
@@ -596,6 +616,7 @@ int main(int argc, char *argv[])
 				Sleep(200);
 			}
 		} else
+			// XXX this will return 0 !!!
 			return DisplayErrorAndExit(hs, rc,
 						   "Failed to read media status");
 	}
@@ -673,6 +694,7 @@ int main(int argc, char *argv[])
 				   g_ScanAttr.maxSetWindowLength);
 		delete[]pSetWindowBuffer;
 		if (rc != S_OK)
+			// XXX this will return 0 !!!
 			return DisplayErrorAndExit(hs, rc,
 						   "Failed to set scan window");
 	}
@@ -688,6 +710,7 @@ int main(int argc, char *argv[])
 	    (scanSend
 	     (hs, gammaBuf, 3 * g_ScanAttr.SizeOfGammaTable,
 	      SCAN_READSEND_CODE_GAMMA, SCAN_READSEND_QUALIFIER_GAMMA)))
+		// XXX this will return 0 !!!
 		return DisplayErrorAndExit(hs, rc,
 					   "Failed to send gamma table");
 	delete[]gammaBuf;
@@ -710,6 +733,7 @@ int main(int argc, char *argv[])
 	    (scanSend
 	     (hs, bwPointBuffer, 24, SCAN_READSEND_CODE_BWPOINT,
 	      SCAN_READSEND_QUALIFIER_LINEARIZE_WORD)))
+		// XXX this will return 0 !!!
 		return DisplayErrorAndExit(hs, rc, "Failed to set BW points");
 
 	//
@@ -717,6 +741,7 @@ int main(int argc, char *argv[])
 	//
 	BYTE tmp = 0;
 	if (S_OK != (rc = scanScan(hs, &tmp, 1)))
+		// XXX this will return 0 !!!
 		return DisplayErrorAndExit(hs, rc,
 					   "Failed to send scan command");
 
@@ -750,41 +775,50 @@ int main(int argc, char *argv[])
 	//int iBytesToRead = g_ScanAttr.bufferSize;
 	int iBytesRead;
 	BYTE *pBuffer = new BYTE[iBytesToRead];
-	if (!pBuffer)
-		return CloseAndExit(hs);
+	if (!pBuffer) {
+		exit_code = 1;
+		goto stop;
+	}
 	fprintf(stderr, "Actual pixels per line : %d\n", iPixels);
 
-	png_structp png_ptr = NULL;
-	png_infop info_ptr = NULL;
+	png_structp png_ptr;
+	png_ptr = NULL;
+	png_infop info_ptr;
+	info_ptr = NULL;
 	//png_bytep row = NULL;
 
 	png_ptr =
 	    png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	if (!png_ptr) {
 		fprintf(stderr, "Cannot create png struct\n");
-		return 1;
+		exit_code = 1;
+		goto stop;
 	}
 
 	info_ptr = png_create_info_struct(png_ptr);
 	if (!info_ptr) {
 		fprintf(stderr, "Cannot create info ptr\n");
-		return 1;
+		exit_code = 1;
+		goto stop;
 	}
 
 	if (setjmp(png_jmpbuf(png_ptr))) {
 		fprintf(stderr, "Cannot create png\n");
-		return 1;
+		exit_code = 1;
+		goto stop;
 	}
 
 	FILE *tempfile;
 
 	if (write_to_file) {
+		char *iccbuf = NULL;
 		if (file_to_save_to != NULL) {
 			tempfile = fopen((const char *)file_to_save_to, "wb");
 			if (!tempfile) {
 				fprintf(stderr, "Cannot open %s\n",
 					file_to_save_to);
-				return 1;
+				exit_code = 1;
+				goto stop;
 			}
 			png_init_io(png_ptr, tempfile);
 		} else {
@@ -805,8 +839,55 @@ int main(int argc, char *argv[])
 			     PNG_COMPRESSION_TYPE_DEFAULT,
 			     PNG_FILTER_TYPE_BASE);
 
+		if (icc_profile != NULL) {
+			FILE *proffile = fopen(icc_profile, "rb");
+			long iccsize = 0;
+			long read_bytes = 0;
+
+			if (!proffile) {
+				fprintf(stderr, "Cannot open icc file: %s\n",
+					icc_profile);
+				exit_code = 1;
+				goto stop;
+			}
+			fseek(proffile, 0, SEEK_END);
+			iccsize = ftell(proffile);
+			fseek(proffile, 0, SEEK_SET);
+
+			iccbuf = (char *)malloc(iccsize);
+			if (!iccbuf) {
+				fprintf(stderr,
+					"Cannot allocate memory for icc profile\n");
+				exit_code = 1;
+				goto stop;
+			}
+			fprintf(stderr, "iccsize: %d\n", iccsize);
+
+			read_bytes = fread(iccbuf, 1, iccsize, proffile);
+			fprintf(stderr, "Read %d bytes\n", read_bytes);
+
+			if (read_bytes != iccsize) {
+				fprintf(stderr,
+					"Cannot read entire icc profile\n");
+				exit_code = 1;
+				goto stop;
+			}
+
+			if (icc_profile_name == NULL) {
+				icc_profile_name = "sRGB (Contex IQ Quattro 24/44, IQ FLEX)";	//
+			}
+			png_set_iCCP(png_ptr, info_ptr, icc_profile_name, 0,
+				     iccbuf, iccsize);
+		}
+
 		png_write_info(png_ptr, info_ptr);
+
+		free(iccbuf);
 	}
+
+	long bytes_written;
+	bytes_written = 0;
+
 	//  Enter loop to read data
 	//
 	do {
@@ -892,5 +973,11 @@ int main(int argc, char *argv[])
 			return DisplayErrorAndExit(hs, rc,
 						   "Failed to load media");
 
-	return CloseAndExit(hs);
+ stop:
+	if (exit_code != 0) {
+		CloseAndExit(hs);
+		return exit_code;
+	} else {
+		return CloseAndExit(hs);
+	}
 }
