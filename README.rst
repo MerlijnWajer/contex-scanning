@@ -39,6 +39,9 @@ following options/features:
 * *-t* set top-offset in millimeters
 * *-s* save image (boolean, will print to default stdout)
 * *-f* save image to file instead of stdout
+* *-i* embed colour profile from file, default is no profile
+* *-i* name for embedded colour profile (default is
+  "sRGB (Contex IQ Quattro 24/44, IQ FLEX)")
 
 There's more work to be done, see the `TODO`_ section.
 
@@ -85,10 +88,9 @@ To scan a gatefold::
 
     wine simplescan.exe -d 100 -h 618 -w 312 -l 175 -t 0
 
-To scan a full bed (-h 900 is too large, but the scanner will just cut it to the
-right value)::
+To scan a full bed::
 
-    wine simplescan.exe -d 600 -h 620 -w 487 -l 0 -t 0
+    wine simplescan.exe -d 600 -h 637 -w 487 -l 0 -t 0
 
 
 You might have to set WINEPATH to a location that contains the mingw dlls,
