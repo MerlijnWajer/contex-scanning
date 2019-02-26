@@ -32,7 +32,7 @@ template <typename T> T MySwap(T src)
 {
    BYTE b[sizeof(T)];
    BYTE *pb=(BYTE *)&src;
-   for(int i=0;i<sizeof(T);i++)
+   for(unsigned int i=0;i<sizeof(T);i++)
       b[i]=pb[sizeof(T)-1-i];
    
    return *(T *)b;

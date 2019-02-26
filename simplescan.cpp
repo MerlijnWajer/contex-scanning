@@ -39,7 +39,6 @@
 #include <math.h>
 #include <sys/stat.h>		// stat
 #include "utils.h"
-#include "BmpData.h"
 #include "ScannerAttributes.h"
 #include "ctx_scan_2000.h"	// Include CONTEX SDK header filer
 #include "SetWindowParams.h"
@@ -391,7 +390,7 @@ int DisplayScannerInfo(HSCANNER hs)
 		fprintf(stderr, "Color bit width support: ");
 		int iBits = g_ScanAttr.colorBitWidthSupport;
 		int iColorBitWidth[] = { 24, 48 };
-		for (int idx = 0; idx < (sizeof(iColorBitWidth) / sizeof(int));
+		for (unsigned int idx = 0; idx < (sizeof(iColorBitWidth) / sizeof(int));
 		     idx++) {
 			if (iBits && 0x01)
 				fprintf(stderr, "%2d  ", iColorBitWidth[idx]);
@@ -404,7 +403,7 @@ int DisplayScannerInfo(HSCANNER hs)
 		fprintf(stderr, "Gray bit width support : ");
 		int iBits = g_ScanAttr.graytoneBitWidthSupport;
 		int iGrayBitWidth[] = { 8, 16 };
-		for (int idx = 0; idx < (sizeof(iGrayBitWidth) / sizeof(int));
+		for (unsigned int idx = 0; idx < (sizeof(iGrayBitWidth) / sizeof(int));
 		     idx++) {
 			if (iBits && 0x01)
 				fprintf(stderr, "%2d  ", iGrayBitWidth[idx]);
@@ -543,7 +542,7 @@ int main(int argc, char *argv[])
 	//
 	if (S_OK != (rc = scanGetNextScanner(&hs, &bIsOpen, TRUE)))	// get first available CONTEX scanner
 		// XXX this will return 0 !!!
-		return DisplayErrorAndExit(hs, rc, "Failed to locate scanner");
+		return DisplayErrorAndExit(hs, rc, (char*)"Failed to locate scanner");
 
 	//
 	// Uncomment the following if you have more than one scanner
@@ -551,7 +550,7 @@ int main(int argc, char *argv[])
 	//
 	/*
 	   if(S_OK != (rc=scanGetNextScanner(&hs,&bIsOpen,FALSE))) // get next available CONTEX scanner
-	   return DisplayErrorAndExit(hs,rc, "Failed to locate next scanner");
+	   return DisplayErrorAndExit(hs,rc, (char*)"Failed to locate next scanner");
 	 */
 
 	//
@@ -559,15 +558,14 @@ int main(int argc, char *argv[])
 	//
 	if (S_OK != (rc = scanOpenScanner(hs)))
 		// XXX this will return 0 !!!
-		return DisplayErrorAndExit(hs, rc, "Failed to open scanner");
+		return DisplayErrorAndExit(hs, rc, (char*)"Failed to open scanner");
 
 	//
 	// Read some attributes from the scanner
 	//
 	if (S_OK != (rc = ReadAttributes(hs)))
 		// XXX this will return 0 !!!
-		return DisplayErrorAndExit(hs, rc,
-					   "Failed to read scanner attributes");
+		return DisplayErrorAndExit(hs, rc, (char*)"Failed to read scanner attributes");
 
 	if (!DisplayScannerInfo(hs))
 		return 3;
@@ -579,11 +577,11 @@ int main(int argc, char *argv[])
 		if (rc == SCSI_STATUS_RESERVATION_CONFLICT)
 			// XXX this will return 0 !!!
 			return DisplayErrorAndExit(hs, rc,
-						   "Scanner already reserved");
+						   (char*)"Scanner already reserved");
 		else
 			// XXX this will return 0 !!!
 			return DisplayErrorAndExit(hs, rc,
-						   "Failed to reserve scanner");
+						   (char*)"Failed to reserve scanner");
 	}
 	g_UnitReserved = true;
 
@@ -592,7 +590,7 @@ int main(int argc, char *argv[])
 	//
 	if (S_OK != (rc = scanObjectPosition(hs, SCAN_OBJ_POS_LOAD, 0)))
 		// XXX this will return 0 !!!
-		return DisplayErrorAndExit(hs, rc, "Failed to load media");
+		return DisplayErrorAndExit(hs, rc, (char*)"Failed to load media");
 
 	//
 	// wait for media to load
@@ -618,7 +616,7 @@ int main(int argc, char *argv[])
 		} else
 			// XXX this will return 0 !!!
 			return DisplayErrorAndExit(hs, rc,
-						   "Failed to read media status");
+						   (char*)"Failed to read media status");
 	}
 
 	//
@@ -674,8 +672,7 @@ int main(int argc, char *argv[])
 	// Is Post Scan Original Handling supported?
 	//
 	bool bPostScanHandlingSupported = false;
-	if (g_ScanAttr.maxSetWindowLength >
-	    offsetof(SETWINDOWPARAMS, m_PostScanOriginalHandling)) {
+	if (g_ScanAttr.maxSetWindowLength > (int)offsetof(SETWINDOWPARAMS, m_PostScanOriginalHandling)) {
 		bPostScanHandlingSupported = true;
 		swp.m_PostScanOriginalHandling =
 		    SCAN_OBJ_POST_POS_EJECT_ROLLERS;
@@ -696,7 +693,7 @@ int main(int argc, char *argv[])
 		if (rc != S_OK)
 			// XXX this will return 0 !!!
 			return DisplayErrorAndExit(hs, rc,
-						   "Failed to set scan window");
+						   (char*)"Failed to set scan window");
 	}
 
 	//
@@ -712,7 +709,7 @@ int main(int argc, char *argv[])
 	      SCAN_READSEND_CODE_GAMMA, SCAN_READSEND_QUALIFIER_GAMMA)))
 		// XXX this will return 0 !!!
 		return DisplayErrorAndExit(hs, rc,
-					   "Failed to send gamma table");
+					   (char*)"Failed to send gamma table");
 	delete[]gammaBuf;
 
 	//
@@ -734,7 +731,7 @@ int main(int argc, char *argv[])
 	     (hs, bwPointBuffer, 24, SCAN_READSEND_CODE_BWPOINT,
 	      SCAN_READSEND_QUALIFIER_LINEARIZE_WORD)))
 		// XXX this will return 0 !!!
-		return DisplayErrorAndExit(hs, rc, "Failed to set BW points");
+		return DisplayErrorAndExit(hs, rc, (char*)"Failed to set BW points");
 
 	//
 	//  Issue start scan command.
@@ -743,7 +740,7 @@ int main(int argc, char *argv[])
 	if (S_OK != (rc = scanScan(hs, &tmp, 1)))
 		// XXX this will return 0 !!!
 		return DisplayErrorAndExit(hs, rc,
-					   "Failed to send scan command");
+					   (char*)"Failed to send scan command");
 
 	//
 	// After a scan command we can read the actual number
@@ -861,10 +858,10 @@ int main(int argc, char *argv[])
 				exit_code = 1;
 				goto stop;
 			}
-			fprintf(stderr, "iccsize: %d\n", iccsize);
+			fprintf(stderr, "iccsize: %ld\n", iccsize);
 
 			read_bytes = fread(iccbuf, 1, iccsize, proffile);
-			fprintf(stderr, "Read %d bytes\n", read_bytes);
+			fprintf(stderr, "Read %ld bytes\n", read_bytes);
 
 			if (read_bytes != iccsize) {
 				fprintf(stderr,
@@ -874,7 +871,7 @@ int main(int argc, char *argv[])
 			}
 
 			if (icc_profile_name == NULL) {
-				icc_profile_name = "sRGB (Contex IQ Quattro 24/44, IQ FLEX)";	//
+				icc_profile_name = (char*)"sRGB (Contex IQ Quattro 24/44, IQ FLEX)";
 			}
 			png_set_iCCP(png_ptr, info_ptr, icc_profile_name, 0,
 				     iccbuf, iccsize);
@@ -884,9 +881,6 @@ int main(int argc, char *argv[])
 
 		free(iccbuf);
 	}
-
-	long bytes_written;
-	bytes_written = 0;
 
 	//  Enter loop to read data
 	//
@@ -971,7 +965,7 @@ int main(int argc, char *argv[])
 		if (S_OK !=
 		    (rc = scanObjectPosition(hs, SCAN_OBJ_POS_UNLOAD, 0)))
 			return DisplayErrorAndExit(hs, rc,
-						   "Failed to load media");
+						   (char*)"Failed to load media");
 
  stop:
 	if (exit_code != 0) {

@@ -1,12 +1,12 @@
 .PHONY: default clean
 
-CFLAGS+=-std=c++11 -Wall -Wextra -O2
+CFLAGS+=-std=c++11 -Wall -Wextra -O2 -Wno-clobbered
 LDFLAGS+=-lctx_scan_2000 -lpng14 -L. -Ibins/windows_32/include/libpng14 -Ibins/windows_32/include -Lbins/windows_32/lib
 #CC=x86_64-w64-mingw32-g++
 CC=i686-w64-mingw32-g++
 
-SCAN_OS=BmpData.cpp  simplescan.cpp  StdAfx.cpp
-SCAN_HS=BmpData.h ScannerAttributes.h SetWindowParams.h StdAfx.h utils.h
+SCAN_OS=simplescan.cpp StdAfx.cpp
+SCAN_HS=ScannerAttributes.h SetWindowParams.h StdAfx.h utils.h
 
 
 default: simplescan.exe
