@@ -221,9 +221,9 @@ int ReadAttributes(HSCANNER hs)
 				//          g_ScanAttr.NoOfCameras = GET_BYTE(inqPageBuffer,14);
 				break;
 			case SCAN_INQUIRY_PAGE_DEVICE_INFORMATION:
-				g_ScanAttr.
-				    ProductID.assign((const char *)inqPageBuffer
-						     + 150, 32);
+				g_ScanAttr.ProductID.
+				    assign((const char *)inqPageBuffer + 150,
+					   32);
 				break;
 			case SCAN_INQUIRY_PAGE_DISPLAY_INFORMATION:
 				break;
@@ -390,8 +390,8 @@ int DisplayScannerInfo(HSCANNER hs)
 		fprintf(stderr, "Color bit width support: ");
 		int iBits = g_ScanAttr.colorBitWidthSupport;
 		int iColorBitWidth[] = { 24, 48 };
-		for (unsigned int idx = 0; idx < (sizeof(iColorBitWidth) / sizeof(int));
-		     idx++) {
+		for (unsigned int idx = 0;
+		     idx < (sizeof(iColorBitWidth) / sizeof(int)); idx++) {
 			if (iBits && 0x01)
 				fprintf(stderr, "%2d  ", iColorBitWidth[idx]);
 			iBits >>= 1;
@@ -403,8 +403,8 @@ int DisplayScannerInfo(HSCANNER hs)
 		fprintf(stderr, "Gray bit width support : ");
 		int iBits = g_ScanAttr.graytoneBitWidthSupport;
 		int iGrayBitWidth[] = { 8, 16 };
-		for (unsigned int idx = 0; idx < (sizeof(iGrayBitWidth) / sizeof(int));
-		     idx++) {
+		for (unsigned int idx = 0;
+		     idx < (sizeof(iGrayBitWidth) / sizeof(int)); idx++) {
 			if (iBits && 0x01)
 				fprintf(stderr, "%2d  ", iGrayBitWidth[idx]);
 			iBits >>= 1;
@@ -542,7 +542,8 @@ int main(int argc, char *argv[])
 	//
 	if (S_OK != (rc = scanGetNextScanner(&hs, &bIsOpen, TRUE)))	// get first available CONTEX scanner
 		// XXX this will return 0 !!!
-		return DisplayErrorAndExit(hs, rc, (char*)"Failed to locate scanner");
+		return DisplayErrorAndExit(hs, rc,
+					   (char *)"Failed to locate scanner");
 
 	//
 	// Uncomment the following if you have more than one scanner
@@ -558,14 +559,17 @@ int main(int argc, char *argv[])
 	//
 	if (S_OK != (rc = scanOpenScanner(hs)))
 		// XXX this will return 0 !!!
-		return DisplayErrorAndExit(hs, rc, (char*)"Failed to open scanner");
+		return DisplayErrorAndExit(hs, rc,
+					   (char *)"Failed to open scanner");
 
 	//
 	// Read some attributes from the scanner
 	//
 	if (S_OK != (rc = ReadAttributes(hs)))
 		// XXX this will return 0 !!!
-		return DisplayErrorAndExit(hs, rc, (char*)"Failed to read scanner attributes");
+		return DisplayErrorAndExit(hs, rc,
+					   (char *)
+					   "Failed to read scanner attributes");
 
 	if (!DisplayScannerInfo(hs))
 		return 3;
@@ -577,11 +581,13 @@ int main(int argc, char *argv[])
 		if (rc == SCSI_STATUS_RESERVATION_CONFLICT)
 			// XXX this will return 0 !!!
 			return DisplayErrorAndExit(hs, rc,
-						   (char*)"Scanner already reserved");
+						   (char *)
+						   "Scanner already reserved");
 		else
 			// XXX this will return 0 !!!
 			return DisplayErrorAndExit(hs, rc,
-						   (char*)"Failed to reserve scanner");
+						   (char *)
+						   "Failed to reserve scanner");
 	}
 	g_UnitReserved = true;
 
@@ -590,7 +596,8 @@ int main(int argc, char *argv[])
 	//
 	if (S_OK != (rc = scanObjectPosition(hs, SCAN_OBJ_POS_LOAD, 0)))
 		// XXX this will return 0 !!!
-		return DisplayErrorAndExit(hs, rc, (char*)"Failed to load media");
+		return DisplayErrorAndExit(hs, rc,
+					   (char *)"Failed to load media");
 
 	//
 	// wait for media to load
@@ -616,7 +623,8 @@ int main(int argc, char *argv[])
 		} else
 			// XXX this will return 0 !!!
 			return DisplayErrorAndExit(hs, rc,
-						   (char*)"Failed to read media status");
+						   (char *)
+						   "Failed to read media status");
 	}
 
 	//
@@ -672,7 +680,8 @@ int main(int argc, char *argv[])
 	// Is Post Scan Original Handling supported?
 	//
 	bool bPostScanHandlingSupported = false;
-	if (g_ScanAttr.maxSetWindowLength > (int)offsetof(SETWINDOWPARAMS, m_PostScanOriginalHandling)) {
+	if (g_ScanAttr.maxSetWindowLength >
+	    (int)offsetof(SETWINDOWPARAMS, m_PostScanOriginalHandling)) {
 		bPostScanHandlingSupported = true;
 		swp.m_PostScanOriginalHandling =
 		    SCAN_OBJ_POST_POS_EJECT_ROLLERS;
@@ -693,7 +702,8 @@ int main(int argc, char *argv[])
 		if (rc != S_OK)
 			// XXX this will return 0 !!!
 			return DisplayErrorAndExit(hs, rc,
-						   (char*)"Failed to set scan window");
+						   (char *)
+						   "Failed to set scan window");
 	}
 
 	//
@@ -709,7 +719,8 @@ int main(int argc, char *argv[])
 	      SCAN_READSEND_CODE_GAMMA, SCAN_READSEND_QUALIFIER_GAMMA)))
 		// XXX this will return 0 !!!
 		return DisplayErrorAndExit(hs, rc,
-					   (char*)"Failed to send gamma table");
+					   (char *)
+					   "Failed to send gamma table");
 	delete[]gammaBuf;
 
 	//
@@ -731,7 +742,8 @@ int main(int argc, char *argv[])
 	     (hs, bwPointBuffer, 24, SCAN_READSEND_CODE_BWPOINT,
 	      SCAN_READSEND_QUALIFIER_LINEARIZE_WORD)))
 		// XXX this will return 0 !!!
-		return DisplayErrorAndExit(hs, rc, (char*)"Failed to set BW points");
+		return DisplayErrorAndExit(hs, rc,
+					   (char *)"Failed to set BW points");
 
 	//
 	//  Issue start scan command.
@@ -740,7 +752,8 @@ int main(int argc, char *argv[])
 	if (S_OK != (rc = scanScan(hs, &tmp, 1)))
 		// XXX this will return 0 !!!
 		return DisplayErrorAndExit(hs, rc,
-					   (char*)"Failed to send scan command");
+					   (char *)
+					   "Failed to send scan command");
 
 	//
 	// After a scan command we can read the actual number
@@ -871,7 +884,9 @@ int main(int argc, char *argv[])
 			}
 
 			if (icc_profile_name == NULL) {
-				icc_profile_name = (char*)"sRGB (Contex IQ Quattro 24/44, IQ FLEX)";
+				icc_profile_name =
+				    (char *)
+				    "sRGB (Contex IQ Quattro 24/44, IQ FLEX)";
 			}
 			png_set_iCCP(png_ptr, info_ptr, icc_profile_name, 0,
 				     iccbuf, iccsize);
@@ -881,7 +896,6 @@ int main(int argc, char *argv[])
 
 		free(iccbuf);
 	}
-
 	//  Enter loop to read data
 	//
 	do {
@@ -965,7 +979,8 @@ int main(int argc, char *argv[])
 		if (S_OK !=
 		    (rc = scanObjectPosition(hs, SCAN_OBJ_POS_UNLOAD, 0)))
 			return DisplayErrorAndExit(hs, rc,
-						   (char*)"Failed to load media");
+						   (char *)
+						   "Failed to load media");
 
  stop:
 	if (exit_code != 0) {
