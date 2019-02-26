@@ -830,8 +830,8 @@ int main(int argc, char *argv[])
 		// Disable compression
 		png_set_compression_level(png_ptr, 0);
 
-		int width_px = int (ceil((width / 25.4) * dpi));
-		int height_px = int (ceil((height / 25.4) * dpi));
+		int width_px = int (floor((width / 25.4) * dpi));
+		int height_px = int (floor((height / 25.4) * dpi));
 		fprintf(stderr, "width_px: %d; height_px: %d\n", width_px,
 			height_px);
 		png_set_IHDR(png_ptr, info_ptr, width_px, height_px, 8,
