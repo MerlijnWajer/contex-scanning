@@ -25,9 +25,7 @@ actually use it.
 
 Using the Contex SDK "example scan code", it is possible to perform headless
 scans. Their example builds on Visual Studio 2017 on Windows. I've taken the
-code and made it work with MinGW and a Makefile. Set *WRITEFILE* to true if you
-want it to save the bitmap, but be aware that it's **REALLY SLOW** at writing
-bitmaps, so do not use this for any kind of benchmarking.
+code and made it work with MinGW and a Makefile.
 
 Currently, *simplescan.exe* is built by the Makefile, and it supports the
 following options/features:
@@ -37,7 +35,7 @@ following options/features:
 * *-h* set height in millimeters
 * *-l* set left-offset in millimeters
 * *-t* set top-offset in millimeters
-* *-s* save image (boolean, will print to default stdout)
+* *-s* save image (boolean, will print PNG to stdout by default)
 * *-f* save image to file instead of stdout
 * *-i* embed colour profile from file, default is no profile
 * *-i* name for embedded colour profile (default is
@@ -82,15 +80,15 @@ Running
 
 To scan a front of LP artwork::
 
-    wine simplescan.exe -d 100 -h 309 -w 312 -l 175 -t 0
+    wine simplescan.exe -d 100 -h 309 -w 312 -l 175 -t 0 -s
 
 To scan a gatefold::
 
-    wine simplescan.exe -d 100 -h 618 -w 312 -l 175 -t 0
+    wine simplescan.exe -d 100 -h 618 -w 312 -l 175 -t 0 -s
 
 To scan a full bed::
 
-    wine simplescan.exe -d 600 -h 635 -w 487 -l 0 -t 0
+    wine simplescan.exe -d 600 -h 635 -w 487 -l 0 -t 0 -s
 
 
 You might have to set WINEPATH to a location that contains the mingw dlls,
@@ -127,10 +125,3 @@ Example::
     Model=
     Serial=
     Name=Network scanner at 127.0.0.1
-
-TODO
-====
-
-* Load/package their sRGB ICC and add it
-* 'No image data!' is sometimes written by ctx_scan_2000.dll (esp. with 1200
-  DPI) and then we lack some image data. Need to debug what happens there.
