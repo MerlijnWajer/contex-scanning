@@ -90,7 +90,7 @@ To scan a gatefold::
 
 To scan a full bed::
 
-    wine simplescan.exe -d 600 -h 637 -w 487 -l 0 -t 0
+    wine simplescan.exe -d 600 -h 635 -w 487 -l 0 -t 0
 
 
 You might have to set WINEPATH to a location that contains the mingw dlls,
