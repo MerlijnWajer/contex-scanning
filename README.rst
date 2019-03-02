@@ -37,9 +37,11 @@ following options/features:
 * *-t* set top-offset in millimeters
 * *-s* save image (boolean, will print PNG to stdout by default)
 * *-f* save image to file instead of stdout
-* *-i* embed colour profile from file, default is no profile
-* *-i* name for embedded colour profile (default is
+* *-i* embed colour profile from file, default is no profile (recommended to use
+  sRGB_IEC61966-2-1_black_scaled.icc from ArchiveCD distribution)
+* *-n* name for embedded colour profile (default is
   "sRGB (Contex IQ Quattro 24/44, IQ FLEX)")
+* *-S* use sRGB mode (**You should enable this, default is DISABLED**)
 
 There's more work to be done, see the `TODO`_ section.
 

@@ -77,6 +77,8 @@ char *icc_profile = NULL;
 char *icc_profile_name = NULL;
 bool write_to_file = false;
 
+bool bUseSRGB = false;
+
 int exit_code = 0;
 
 void SetError(HSCANNER hs, int eco)
@@ -242,13 +244,13 @@ int ReadAttributes(HSCANNER hs)
 	return rc;
 }
 
-void MakeGammaTable(BYTE * pTab, int nReqSize, bool bUSeSRGB)
+void MakeGammaTable(BYTE * pTab, int nReqSize, bool bUseSRGB)
 {
 	int i;
 	// Return a linear gamma table
 	for (i = 0; i < nReqSize; i++) {
 		pTab[i] = 255 * i / (nReqSize - 1);
-		if (bUSeSRGB)
+		if (bUseSRGB)
 			pTab[i] =
 			    (int)(0.5 +
 				  255.0 *
@@ -438,7 +440,7 @@ void parse_args(int argc, char *argv[])
 		/* getopt_long stores the option index here. */
 		int option_index = 0;
 
-		c = getopt_long(argc, argv, "d:w:h:l:t:f:i:n:s",
+		c = getopt_long(argc, argv, "d:w:h:l:t:f:i:n:sS",
 				long_options, &option_index);
 
 		/* Detect the end of the options. */
@@ -487,6 +489,11 @@ void parse_args(int argc, char *argv[])
 			write_to_file = true;
 			break;
 
+		case 'S':
+			fprintf(stderr, "option -S passed\n");
+			bUseSRGB = true;
+			break;
+
 		case 'f':
 			fprintf(stderr, "option -f with value `%s'\n", optarg);
 			file_to_save_to = strdup(optarg);
@@ -525,6 +532,8 @@ int main(int argc, char *argv[])
 #endif
 
 	parse_args(argc, argv);
+
+    fprintf(stderr, "Use SRGB: %d\n", bUseSRGB);
 
 	//
 	//  We must open the library first
@@ -631,7 +640,6 @@ int main(int argc, char *argv[])
 	//  Set scan window
 	//
 	SETWINDOWPARAMS swp;
-	bool bUseSRGB = true;
 	int dpi = use_dpi;
 	//int width      = 490;
 	int width = use_width;
@@ -886,7 +894,7 @@ int main(int argc, char *argv[])
 			if (icc_profile_name == NULL) {
 				icc_profile_name =
 				    (char *)
-				    "sRGB (Contex IQ Quattro 24/44, IQ FLEX)";
+				    "sRGB IEC61966-2-1 black scaled";
 			}
 			png_set_iCCP(png_ptr, info_ptr, icc_profile_name, 0,
 				     iccbuf, iccsize);
