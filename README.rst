@@ -13,8 +13,8 @@ functions around ``GS.Task.dll``, which is a high level task manager to
 ``CtxScan64.dll`` and ``CtxSws64.dll``, which perform the actual scanning.
 
 The low level driver is called ``ctx_scan_2000.dll`` (and ``ScanWing.dll``), and is
-shipped with the *WIDEsystem* "driver". The *WIDEsystem* driver also contains a
-GUI to find/add scanners, called *WS.exe* - but this is in no way required to
+shipped with the ``WIDEsystem`` "driver". The ``WIDEsystem`` driver also contains a
+GUI to find/add scanners, called ``WS.exe`` - but this is in no way required to
 actually use the drivers. The scanners are stored in
 ``C:\ProgramData\Contex\WIDEsystem\Settings.ini`` (or, in WINE, in:
 ``C:\ProgramData\Settings.ini``) and can be tweaked manually or defined
