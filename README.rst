@@ -17,7 +17,7 @@ shipped with the *WIDEsystem* "driver". The *WIDEsystem* driver also contains a
 GUI to find/add scanners, called *WS.exe* - but this is in no way required to
 actually use the drivers. The scanners are stored in
 ``C:\ProgramData\Contex\WIDEsystem\Settings.ini`` (or, in WINE, in:
-*C:\ProgramData\Settings.ini*) and can be tweaked manually or defined
+``C:\ProgramData\Settings.ini``) and can be tweaked manually or defined
 programmatically in that file. The ``ctx_scan_2000.dll`` API will also require
 this file to be present, otherwise it will not initialise. It also requires
 ``CtxWia64.dll`` to be present in ``C:\Windows\System32`` but doesn't seem to
